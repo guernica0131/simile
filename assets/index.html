@@ -14,13 +14,17 @@
     
     <body>
       <script type="text/x-handlebars" data-template-name="application">
-      
-        <h1>Project Simile</h1>
+        <ul class="nav navbar-nav navbar-right">      
+        </ul>
+        
+       <div class="container">
         {{outlet}}
+        </div>
       </script>
       
 
       <script type="text/x-handlebars" data-template-name="index">
+        <h1>Project Simile</h1>
         <ul>
         {{#each}}
           <li>My Dummies {{name}}</li>
