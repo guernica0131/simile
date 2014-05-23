@@ -714,19 +714,9 @@ var io="undefined"==typeof module?{}:module.exports;(function(){(function(a,b){v
         io.socket.on('connect', function socketConnected() {
 
           consolog.noPrefix(
-            '\n' +
-            '    |>    ' + '\n' +
-            '  \\___/  '
+           'Simile is now connected and ready for greatness...'
           );
-          consolog(
-            '`io.socket` connected successfully.' + '\n' +
-            // 'e.g. to send a GET request to Sails via WebSockets, run:'+ '\n' +
-            // '`io.socket.get("/foo", function serverRespondedWith (body, jwr) { console.log(body); })`'+ '\n' +
-            ' (for help, see: http://sailsjs.org/#!documentation/reference/BrowserSDK/BrowserSDK.html)'
-          );
-          // consolog('(this app is running in development mode - log messages will be displayed)');
-
-
+        
           if (!io.socket.$events.disconnect) {
             io.socket.on('disconnect', function() {
               consolog('====================================');
