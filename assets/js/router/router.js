@@ -3,13 +3,14 @@
 //////////////////////////////////
 App.Router.map(function() {
     // put your routes here
-    //this.route('about');
-    // this.resource('products', function() {
-    //     this.route('onsale');
-    //     this.resource('product', {
-    //         path: '/:product_id'
-    //     });
-    // });
+    this.resource('quizzes', function() {
+        this.route('new');
+        this.route('edit');
+        this.route('delete');
+        this.resource('quiz', {
+            path: '/quiz/:quiz_id'
+        });
+    });
 
 });
 
@@ -20,6 +21,27 @@ App.Router.map(function() {
 // INDEX
 App.IndexRoute = Ember.Route.extend({
     model: function() {
+        // change to courses
         return this.store.findAll('dummy');
     }
+});
+
+// INDEX
+App.QuizzesRoute = Ember.Route.extend({
+    model: function() {
+        // change to courses
+        return this.store.findAll('quiz');
+    }
+});
+
+// // INDEX
+// App.QuizRoute = Ember.Route.extend({
+//     model: function() {
+//         // change to courses
+//         return this.store.findAll('quiz');
+//     }
+// });
+
+App.QuizController = Ember.ObjectController.extend({
+
 });

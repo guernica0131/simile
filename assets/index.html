@@ -1,45 +1,74 @@
 <!DOCTYPE>
 <html>
   <head>
-   
-      <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-      <!--STYLES-->
-      <!--STYLES END-->
-      
-      <!--[if IE]>
-        <link href="assets/styles/stylesheets/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
-      <![endif]-->
-      
-    </head>
     
-    <body>
-      <script type="text/x-handlebars" data-template-name="application">
-        <ul class="nav navbar-nav navbar-right">      
-        </ul>
-        
-       <div class="container">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <!--STYLES-->
+    <!--STYLES END-->
+    
+    <!--[if IE]>
+    <link href="assets/styles/stylesheets/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
+    <![endif]-->
+    
+  </head>
+  
+  <body>
+    <script type="text/x-handlebars" data-template-name="application">
+    <div class="navbar">
+    <ul class="nav navbar-nav navbar-right pad-right-5">
+      {{#link-to 'index' classNames="navbar-brand nav-links" tagName="li"}}Simile{{/link-to}} 
+      {{#link-to 'quizzes' classNames="navbar-brand nav-links" tagName="li"}}Quizzes{{/link-to}}
+    </ul>
+    </div>
+    
+    <div class="container">
+      
+      {{outlet}}
+    </div>
+    <footer class="container"></footer>
+    </script>
+    
+    <script type="text/x-handlebars" data-template-name="index">
+    <h1>Project Simile</h1>
+    <ul>
+      {{#each}}
+      <li>My Dummies {{name}}</li>
+      {{/each}}
+    </ul>
+    </script>
+    <script type="text/x-handlebars" data-template-name="quizzes">
+
+    <div class="row">
+      <div class="col-sm-3">
+        <p>Available quizzes</p>
+        <div class="list-group">
+          {{#each}}
+            {{#link-to 'quiz' this classNames="list-group-item"}}
+              {{name}}
+            {{/link-to}}
+          {{/each}}
+        </div>`
+      </div>
+      <div class="col-sm-9">
         {{outlet}}
+      </div>
+    </div>
+    </script>
+
+     <script type="text/x-handlebars" data-template-name="quiz">
+    
+        <div class="">
+
         </div>
-      </script>
-      
-
-      <script type="text/x-handlebars" data-template-name="index">
-        <h1>Project Simile</h1>
-        <ul>
-        {{#each}}
-          <li>My Dummies {{name}}</li>
-        {{/each}}
-        </ul>
-      </script>
-      
     
-
-      <!--TEMPLATES-->
-      <!--TEMPLATES END-->
+    </script>
     
-      <!--SCRIPTS-->
-      <!--SCRIPTS END-->
     
-
-    </body>
-  </html>
+    <!--TEMPLATES-->
+    <!--TEMPLATES END-->
+    
+    <!--SCRIPTS-->
+    <!--SCRIPTS END-->
+    
+  </body>
+</html>

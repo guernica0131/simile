@@ -31,8 +31,30 @@ module.exports.routes = {
     //   view: 'homepage'
     // },
 
-
     // Custom routes here...
+    // If no id is given, an array of all users will be returned
+    'get /api/v1/quizzes': {
+        controller: 'quiz',
+        action: 'find'
+    },
+    'get /api/v1/quizzes/:id?': {
+        controller: 'quiz',
+        action: 'find'
+    },
+    'post /api/v1/quizzes': {
+        controller: 'quiz',
+        action: 'create'
+    },
+    'put /api/v1/quizzes/:id': {
+        controller: 'quiz',
+        action: 'update'
+    },
+    'delete /api/v1/quizzes/:id': {
+        controller: 'quiz',
+        action: 'destroy'
+    }
+
+
 
 
     // If a request to a URL doesn't match any of the custom routes above,

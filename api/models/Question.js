@@ -8,33 +8,59 @@
 module.exports = {
 
     attributes: {
-
+        // a question can be named
         name: {
             type: 'string'
         },
-
+        // this is the body of the question. It is the actual question being asked. It can be in 
+        // HTML form, and will render Javascript form
+        body: {
+            type: 'text'
+        },
+        // if the question has a timer, we place it here
+        timed: {
+            type: 'numeric',
+            defaultsTo: 0
+        },
+        // you can assign a difficultly the question, higher the more difficult
         difficulty: {
-            type: 'integer'
+            type: 'integer',
+            in : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         },
-
+        // when we randomize, a priority can be assigned to ensure the question is asked. The higher the priority the more likely it will get assinged
         priority: {
-            type: 'integer'
+            type: 'integer',
+            //in: [0,1,2,3,4,5,6,7,8,9,10]
         },
-
+        // this question can belong to one or many quizzes
         quizzes: {
             collection: 'quiz',
             via: 'questions'
         },
-
-        startState: {
-            model: 'questionState'
+        // contains master instructions for the collection
+        instructions: {
+            type: 'string'
+        },
+        // there can be one or many question state, this means a question can be in the form
+        // that takes multiple parts. The question state contains the actual question content
+        states: {
+            collection: 'questionState',
+            via: 'question'
         },
 
-        // states: {
-        //     collection: 'questionState',
-        //     via: 'questions',
-        //     //dominant: true
-        // }
+        progress: function() {
+            var response = this.toObject();
+            // function that finds the current progress
+            return 1;
+        },
+        next: function() {
+            // we will use this function to tell the record it needs to move to the next state.
+            // if we are at the end state, we will call next on the quiz
+        },
 
-    }
+
+    },
+
+
+
 };
