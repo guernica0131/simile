@@ -25,8 +25,14 @@ module.exports = {
 
             if (err)
                 res.badRequest(err);
+            // there are a few cases here we need to identify
+            // first we need to create a quiz session object, we will append the user and the 
+            // the quiz
+            QuizSession.createSession(quiz, function(session) {
+                console.log("{QUIZ_CONTROLLER_START} quiz object", quiz);
+            });
 
-            console.log("{QUIZ_CONTROLLER_START} quiz object", quiz);
+
 
         });
 
