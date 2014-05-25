@@ -19,7 +19,7 @@ module.exports = {
         },
         // maps back to a question, this is an identifying relationship
         question: {
-            required: true,
+            // required: true,
             model: 'question'
         },
         // gives the array or choices e.g. ['True', 'False']
@@ -30,12 +30,22 @@ module.exports = {
         template: {
             type: 'string'
         },
+        // this defines the weight in the overall question. Selected questions must map to 100%
+        // this value must map to 100% 
+        weight: {
+            type: 'float'
+        },
         // used to generate the question type,
         // e.g. checkbox - only one right answer
         // selectbox, one or many right answers
         kind: {
             type: 'string',
-            in : ['checkbox', 'selectbox', 'appication', 'matching', 'textbox', 'text']
+            defaultsTo: 'custom',
+            in : ['checkbox', 'selectbox', 'appication', 'matching', 'textbox', 'text', 'custom']
+        },
+
+        response: {
+            model: 'questionResponse'
         },
 
         // we need a user/state to manage the user experiences

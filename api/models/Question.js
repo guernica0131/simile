@@ -12,11 +12,11 @@ module.exports = {
         name: {
             type: 'string'
         },
-        // this is the body of the question. It is the actual question being asked. It can be in 
-        // HTML form, and will render Javascript form
-        body: {
-            type: 'text'
-        },
+        // // this is the body of the question. It is the actual question being asked. It can be in 
+        // // HTML form, and will render Javascript form
+        // body: {
+        //     type: 'text'
+        // },
         // if the question has a timer, we place it here
         timed: {
             type: 'numeric',
@@ -38,7 +38,7 @@ module.exports = {
             via: 'questions'
         },
         // contains master instructions for the collection
-        instructions: {
+        instruction: {
             type: 'string'
         },
         // there can be one or many question state, this means a question can be in the form
@@ -47,7 +47,11 @@ module.exports = {
             collection: 'questionState',
             via: 'question'
         },
-
+        // this defines the weight in the overall quiz. Selected questions must map to 100%
+        // each state will have it's derived part that will be a percentage of this value
+        weight: {
+            type: 'float'
+        },
         progress: function() {
             var response = this.toObject();
             // function that finds the current progress

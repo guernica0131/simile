@@ -49,7 +49,7 @@ module.exports = {
         interpreted: {
             type: 'boolean',
             required: true,
-            defaults: false
+            defaultsTo: false
         },
         // the solution can be predefined if it is not interpreted
         solution: {

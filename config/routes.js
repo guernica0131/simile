@@ -52,6 +52,21 @@ module.exports.routes = {
     'delete /api/v1/quizzes/:id': {
         controller: 'quiz',
         action: 'destroy'
+    },
+
+    // 'get /api/v1/quizzes/answer/:id/question/respond/:rid': {
+    //     controller: 'question',
+    //     action: 'respond'
+    // }
+    // reconfigure
+    'get /api/v1/quiz/answer/:id/*': {
+        controller: 'quiz',
+        action: 'answer'
+    },
+
+    'get */questions/answer/:id': {
+        controller: 'question',
+        action: 'answer'
     }
 
 

@@ -7,7 +7,7 @@
     <!--STYLES END-->
     
     <!--[if IE]>
-    <link href="assets/styles/stylesheets/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
+      <link href="assets/styles/stylesheets/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
     <![endif]-->
     
   </head>
@@ -15,14 +15,13 @@
   <body>
     <script type="text/x-handlebars" data-template-name="application">
     <div class="navbar">
-    <ul class="nav navbar-nav navbar-right pad-right-5">
-      {{#link-to 'index' classNames="navbar-brand nav-links" tagName="li"}}Simile{{/link-to}} 
-      {{#link-to 'quizzes' classNames="navbar-brand nav-links" tagName="li"}}Quizzes{{/link-to}}
-    </ul>
+      <ul class="nav navbar-nav navbar-right pad-right-5">
+        {{#link-to 'index' classNames="navbar-brand nav-links" tagName="li"}}Simile{{/link-to}} 
+        {{#link-to 'quizzes' classNames="navbar-brand nav-links" tagName="li"}}Quizzes{{/link-to}}
+      </ul>
     </div>
     
     <div class="container">
-      
       {{outlet}}
     </div>
     <footer class="container"></footer>
@@ -47,7 +46,7 @@
               {{name}}
             {{/link-to}}
           {{/each}}
-        </div>`
+        </div>
       </div>
       <div class="col-sm-9">
         {{outlet}}

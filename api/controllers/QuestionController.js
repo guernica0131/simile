@@ -6,6 +6,15 @@
  */
 
 module.exports = {
-	
-};
 
+
+    answer: function(req, res, next) {
+        console.log("What up", req.params.all());
+
+
+        res.send("Cool");
+
+
+    }
+
+};
