@@ -67,6 +67,11 @@ module.exports.routes = {
     'get */questions/answer/:id': {
         controller: 'question',
         action: 'answer'
+    },
+
+    'post /api/v1/quiz/:id/answer': {
+        controller: 'quiz',
+        action: 'answer'
     }
 
 

@@ -38,11 +38,11 @@ module.exports = {
         },
         // minimum number questions for the quiz
         min: {
-            type: 'number',
+            type: 'integer',
         },
         // max number questions for the quiz
         max: {
-            type: 'number',
+            type: 'integer',
         },
         // the prescribed layout for the quiz questions
         // single page, means all questions are on a single page
@@ -50,6 +50,18 @@ module.exports = {
         layout: {
             type: 'string',
             in : ['single', 'paged', 'custom']
+        },
+        // this defines the number of retakes a user can attempt
+        retakes: {
+            type: 'integer',
+            defaultsTo: 1,
+            required: true
+        },
+
+        // publication parameter
+        published: {
+            type: 'boolean',
+            defaultsTo: false
         },
 
         next: function() {

@@ -9,8 +9,6 @@ module.exports = {
 
     start: function(req, res, next) {
 
-        console.log("Hey I want to anser", req.params.all());
-
         var params = req.params.all(),
             id = params.id;
 
@@ -23,27 +21,42 @@ module.exports = {
 
         Quiz.findOneById(id).populate('questions').exec(function(err, quiz) {
 
-            if (err)
-                res.badRequest(err);
+
+            // console.log("{QUIZ_CONTROLLER_START} quiz object", quiz);
+
+            if (err || _.isUndefined(quiz))
+                return res.badRequest({
+                    error: ((err) ? err : "There is no quiz matching this ID")
+                });
             // there are a few cases here we need to identify
             // first we need to create a quiz session object, we will append the user and the 
             // the quiz
-            QuizSession.createSession(quiz, function(session) {
-                console.log("{QUIZ_CONTROLLER_START} quiz object", quiz);
+            var params = {
+                quiz: quiz,
+                user: {
+                    id: 1
+                } // dummy user for testing
+            };
+            // we call this function to create our quiz session 
+            QuizSession.createSession(params, function(session) {
+                //   console.log("{QUIZ_CONTROLLER_START} quiz object", quiz);
+                if (session.error)
+                    return res.badRequest(session);
+
+                res.send(session);
             });
 
 
 
         });
 
-        res.send("{QUIZ_CONTROLLER_START} Starting quiz");
-
     },
 
     answer: function(req, res, next) {
 
         console.log("{QUIZ_CONTROLLER_ANSWER}Hey I want to answer", req.params.all());
-        next();
+
+        res.send("The answer to your question quite is clear");
     },
 
     _config: {
