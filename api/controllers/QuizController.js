@@ -26,7 +26,7 @@ module.exports = {
 
             if (err || _.isUndefined(quiz))
                 return res.badRequest({
-                    error: ((err) ? err : "There is no quiz matching this ID")
+                    error: ((err) ? err : Messages.errors.quiz.undefinedQuiz)
                 });
             // there are a few cases here we need to identify
             // first we need to create a quiz session object, we will append the user and the 

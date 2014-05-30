@@ -4,6 +4,8 @@
  * @description :: This model manages the quizes, users and questions.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
+var Q = require('q');
+
 
 module.exports = {
 
@@ -26,7 +28,8 @@ module.exports = {
         },
         // all updates to this model we log here
         activity: {
-            model: 'quizActivity'
+            collection: 'quizActivity',
+            via: 'session'
         },
         // This checks to see if there is an active quiz already in progress
         active: {
@@ -50,6 +53,108 @@ module.exports = {
             //model: 'questionResponse'
             // we will keep an array of the question id, in the order they are presented
             type: 'array'
+        },
+        // We can invalidate a quiz session so that it is not on the record
+        valid: {
+            type: 'boolean',
+            defaultsTo: true,
+            required: true
+        },
+
+        isExpired: function(quiz) {
+            //console.log("HEY", quiz);
+
+            var session = this.toObject();
+
+            if (session.expired)
+                return session.expired;
+            //createdAt
+            if (quiz.timed) {
+
+                var started = session.createdAt;
+                start = new Date(started),
+                now = new Date(),
+                start.setMinutes(start.getMinutes() + quiz.timed);
+                //now.addMinutes(50)
+
+                if (now.valueOf() > start.valueOf()) {
+                    this.expired = true;
+                    //this.expired = true;
+                    this.save(console.log);
+                    return true;
+
+                }
+            }
+            return false;
+        },
+
+        time: function(quiz) {
+            var session = this.toObject();
+
+            if (!quiz.timed)
+                return {
+                    message: "Unlimited minutes remain",
+                    time: 999999
+                };
+
+            if (session.expired || this.isExpired(quiz)) {
+                return {
+                    message: "This session has expired",
+                    expired: true
+                };
+            }
+
+
+            var started = session.createdAt;
+            start = new Date(started),
+            now = new Date(),
+            left = new Date();
+
+            start.setSeconds(start.getSeconds() + (quiz.timed * 60));
+
+            var delta = start.getTime() - now.getTime();
+
+            // console.log("now", now);
+            // console.log("start", start);
+
+            // var delta = date2_ms - date1_ms;
+            //take out milliseconds
+            difference_ms = delta / 1000;
+            var seconds = Math.floor(difference_ms % 60);
+            difference_ms = difference_ms / 60;
+            var minutes = Math.floor(difference_ms % 60);
+            difference_ms = difference_ms / 60;
+            var hours = Math.floor(difference_ms % 24);
+            var days = Math.floor(difference_ms / 24);
+
+            if (delta < 0)
+                return {
+                    message: "This session has expired",
+                    expired: true
+                };
+            var message = "You have ";
+
+            if (days)
+                message += days + ((days > 1) ? ' days ' : ' day ');
+
+            if (hours)
+                message += hours + ((hours > 1) ? ' hours ' : ' hour ');
+
+            if (minutes)
+                message += minutes + ((minutes > 1) ? ' minutes and ' : ' minute and ');
+
+            message += seconds + ((seconds > 1) ? ' seconds ' : ' second ');
+
+
+            message += "remaining";
+
+
+            return {
+                message: message,
+                time: delta, //parseFloat(remain),
+                expired: false
+            }
+
         },
         // function because the score is bases on a percentatage of all questin states and questions
         score: function() {
@@ -96,32 +201,28 @@ module.exports = {
         // if we cannot fulfill min, we return an error. 
         var min = quiz.min,
             max = quiz.max,
-            count = min, // we automatically set our count to the minimum, that means at least this number questions will be generated
             questionBank = [], // this will contain the actual questions for the quiz
             random = quiz.random,
             retakes = quiz.retakes,
             questionIDs = _.pluck(questions, 'id'), // questions should be ordered by priority
+            count = _.size(questionIDs), // we automatically set our count to the minimum, that means at least this number questions will be generated
             questionIDs = _.sortBy(questionIDs, function(question) {
                 return question.priority
             });
-
-        // if our min is greater than the number of questions in our bank, we throw an error
-        if (min && min > _.size(questionIDs))
-            return callback({
-                error: Messages.errors.quiz.invalid
+        // now we take a random value between min and max
+        if ((min && min > _.size(questionIDs)) || (min && max && min != max && min > max))
+            return callback({ // if we have no max but our min < questionIDs or min > max
+                error: Messages.errors.quiz.minmax
             });
 
-        // now we take a random value between min and max
-        if (min && max && min != max && min < max) { // if the question bank is less than the max, we take the question bank size
+        else if ((!min && max && max <= _.size(questionIDs)) || (min && max && min === max && max <= _.size(questionIDs)))
+            count = max; // if we have no min but max we set our count at max or we have a min equal to max and max <= to the question bank
+        else if (min && max && min != max && min < max) { // if the question bank is less than the max, we take the question bank size
             var range = _.range(min, (_.size(questionIDs) < max) ? _.size(questionIDs) : max);
             // this pulls a random value from the range of min and max, assuming it is greater than 0
             if (_.size(range) > 0)
                 count = _.sample(range, 1).pop();
         }
-
-        /*
-         * ERROR !!!! We forgot to reconcile the weight parameter, question weight needs to map to 100%
-         */
 
         // if we have a randomize parameter, we resort the questionIDs array
         if (random)
@@ -129,29 +230,164 @@ module.exports = {
         else // other wise, we tak the first questions from the question bank
             questionBank = _.first(questionIDs, count);
 
-        // now we ckeck our models 
-
         // first we need to ensure the user has already not started a quiz (There should not be). If there is we return that session
-        var currentQuiz = QuizSession.findOne({
+        var currentQuizSession = QuizSession.findOne({
             user: userID,
             quiz: quizID,
-            active: true
+            active: true,
+            expired: false
         }).then(function(quiz) {
             return quiz;
         });
+        // we need this to count the number of session for this quiz, this ensures we are not going over the quested amount
+        var AllQuizSessions = QuizSession.find({
+            user: userID,
+            quiz: quizID,
+            valid: true
+        }).populate('activity').then(function(quiz) {
+            return quiz;
+        });
 
-        // when creating the model we assign the first question as element [0] of our questionBank
-        console.log("{QUIZ_SESSION.createSession} we are generating a session", questionBank);
-        // QuizSession.create({
-        //     user: params.user.id,
-        //     quiz: params.quiz.id
-        // }, function(err, session) {
+        // we now pull our question bank
+        var QandA = Question.findById(questionBank).populate('states').then(function(question) {
+            return question;
+        });
 
-        // });
+        Q.spread([currentQuizSession, AllQuizSessions, QandA, quiz, questionBank], function(currentQuizSession, AllQuizSessions, QandA, quiz, questionBank) {
+            // we call valid to ensure we are creating a valid quiz
+            QuizSession._isValid(currentQuizSession, AllQuizSessions, quiz, function(message) {
 
-        // to be referenced
-        callback({ // @todo: change
-            id: 0 // for dummy
-        }); // this will be the session object
+
+                // of there is an error we return it
+                if (message.error) {
+                    // we track all activity
+                    // if the session is current we append to current
+                    if (currentQuizSession) {
+
+                        QuizActivity.create({
+                            action: 'restrictedAttempt',
+                            extras: message,
+                            session: currentQuizSession.id
+                        }, console.log);
+                        // otherwise we need to create a new invalid session
+                    } else {
+
+                        QuizSession.create({
+                            user: params.user.id,
+                            quiz: params.quiz.id,
+                            valid: false,
+                            active: false
+                        }, function(err, session) {
+                            if (err)
+                                return console.error(err);
+
+                            QuizActivity.create({
+                                action: 'restrictedAttempt',
+                                extras: message,
+                                session: session.id
+                            }, console.error);
+                        });
+
+
+                    }
+
+                    return callback(message);
+
+                } else {
+
+
+                    // now let's build our session
+                    QuizSession.create({
+                        user: params.user.id,
+                        quiz: params.quiz.id,
+                        questions: questionBank
+                    }, function(err, session) {
+
+
+
+                        if (err) {
+                            sails.log("{QUIZ_SESSION.createSession} session creation error ", err);
+                            return callback(Messages.errors.model.unknown);
+                        }
+                        // we pull the frist question
+                        var first = _.first(QandA);
+
+                        QuizActivity.create({
+                            action: !_.isUndefined(currentQuizSession) ? 'retake' : 'created',
+                            question: first.id,
+                            state: first.states[0].id,
+                            session: session.id //qs.id
+                        }, function(err, activity) {
+                            if (err) {
+                                console.error("{QUIZ_SESSION.createSession} activity creation error ", err);
+                                return callback(Messages.errors.model.unknown);
+                            }
+                            return callback({
+                                session: session.id
+                            });
+
+                        });
+                    });
+
+
+                }
+
+            });
+
+        }).fail(function(error) {
+            return callback({
+                error: Messages.errors.model.unknown
+            });
+
+        });
+
+    },
+
+    _format: function(params, callback) {
+
+        var session = params.session,
+            quiz = params.quiz,
+            layout = quiz.layout,
+            key = _.keys(layout),
+            obj = {};
+
+
+        QuizSession._format({
+            session: session,
+            quiz: quiz
+        }, function(result) {
+            return callback({
+                quiz: result
+            });
+        });
+
+
+    },
+
+
+    /*
+     * This function is used to validate creating a new session
+     */
+    _isValid: function(quizSession, allSessions, quiz, callback) {
+
+        //console.error(_.size(allSessions));
+        // is our quizsession is defined and our quiz is not complete or expired, we return, @todo ::: check sizes!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (!_.isUndefined(quizSession) && (quizSession.active && !quizSession.isExpired(quiz)))
+            return callback({
+                error: Messages.errors.quiz.session + "'" + quizSession.id + "'"
+            });
+        // if we have a quiz session already, and there are no retakes, and retakes aren't set to 0
+        if (!_.isUndefined(allSessions) && quiz.chances && _.size(allSessions) >= quiz.chances)
+            return callback({
+                error: Messages.errors.quiz.noRetakes
+            });
+
+        callback({
+            valid: true
+        });
+
     }
+
+
+
 };

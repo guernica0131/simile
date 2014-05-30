@@ -72,7 +72,29 @@ module.exports.routes = {
     'post /api/v1/quiz/:id/answer': {
         controller: 'quiz',
         action: 'answer'
-    }
+    },
+
+
+    'get /api/v1/quizSession/:id/questions': {
+        controller: 'quizSession',
+        action: 'question'
+    },
+
+    'get /api/v1/quizSession/:id/current': {
+        controller: 'quizSession',
+        action: 'current'
+    },
+
+    'get /api/v1/quizSession/:id/time': {
+        controller: 'quizSession',
+        action: 'time'
+    },
+
+
+    'post /api/v1/quiz/:id/start': {
+        controller: 'quiz',
+        action: 'start'
+    },
 
 
 

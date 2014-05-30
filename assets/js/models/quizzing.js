@@ -8,6 +8,8 @@ App.Quiz = DS.Model.extend({
     min: DS.attr('number'),
     max: DS.attr('number'),
     layout: DS.attr('string'),
+    retakes: DS.attr('number'),
+    published: DS.attr('boolean'),
     createdAt: DS.attr('string'),
     updatedAt: DS.attr('string'),
     lessons: DS.hasMany('lesson', {

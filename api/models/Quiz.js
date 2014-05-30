@@ -12,7 +12,8 @@ module.exports = {
     attributes: {
         // quiz can have a name
         name: {
-            type: 'string'
+            type: 'string',
+            required: true
         },
         // this will map back to lesson documents. This allows for the question to be mapped back to the lesson
         lessons: {
@@ -26,10 +27,11 @@ module.exports = {
             via: 'quizzes',
             dominant: true
         },
-        // is the quiz timed?
+        // is the quiz timed? Sets the time in minutes
         timed: {
-            type: 'numeric',
-            defaultsTo: 0
+            type: 'integer',
+            defaultsTo: 0,
+            min: 0
         },
         // are the question to be randomized
         random: {
@@ -46,24 +48,32 @@ module.exports = {
         },
         // the prescribed layout for the quiz questions
         // single page, means all questions are on a single page
-        // paged, one question at a time is sent
-        layout: {
-            type: 'string',
-            in : ['single', 'paged', 'custom']
-        },
+        // paged, the selected about will be delivere at a time is sent
+        // e.g. {paged: 1}, {single: true}
+        // layout: {
+        //     type: 'json',
+        //     defaultsTo: {
+        //         'single': true
+        //     }
+        //     //in : [{'single': true }, 'paged', 'custom']
+        // },
         // this defines the number of retakes a user can attempt
-        retakes: {
+        chances: {
             type: 'integer',
-            defaultsTo: 1,
-            required: true
+            defaultsTo: 0,
+            required: true,
+            min: 0
         },
-
         // publication parameter
         published: {
             type: 'boolean',
             defaultsTo: false
         },
-
+        skippable: {
+            type: 'boolean',
+            defaultsTo: true,
+            required: true
+        },
         next: function() {
             // we will use this function to tell the record it needs to move to the next question.
         },

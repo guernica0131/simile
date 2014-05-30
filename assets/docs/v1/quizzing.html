@@ -1,0 +1,115 @@
+<h3>Creating your quiz</h3>
+					<p>To create your quiz, send a POST to the following URL</p>
+					<pre>POST https://projectsimile.org/api/v1/quizzes</pre>
+					<p>The expected response is as follows.</p>
+					<pre>
+{
+    "name": "Simile Sample Quiz",
+    "timed": "0",
+    "random": false,
+    "retakes": 1,
+    "published": false,
+    "skippable": false,
+    "createdAt": "2014-05-29T09:15:52.409Z",
+    "updatedAt": "2014-05-29T09:15:52.409Z",
+    "id": 5
+}
+					</pre>
+
+					<p>A quiz object is comprised of the following paramters</p>
+					<ul>
+						<li>
+							<p>Name describing your quiz</p>
+							<pre>name :: string , required</pre>
+						</li>
+						<li>
+							<p>Lessons, this quiz can be mapped to specific lessons built into Simile. The array must be composed of the IDs of valid lesson objects</p>
+							<pre>lessons :: array of integers , optional</pre>
+						</li>
+						<li>
+							<p>Questions, zero or manu question assined to this quiz's question bank. This value is not required, but a valid quiz session cannot be started until at least one question has been assined. The array must be composed of the IDs of valid quiz objects</p>
+							<pre>questions :: array of integers , optional</pre>
+						</li>
+						<li>
+							<p>Time, sets the time restriction in minutes for the quiz. If 0, then there will be no restriction</p>
+							<pre>timed :: integer , defaults to 0</pre>
+						</li>
+						<li>
+							<p>Random, this value will randomize the question ordering for each session.</p>
+							<pre>random :: boolean , defaults to false</pre>
+						</li>
+						<li>
+							<p>Minumum, defines a minumum number questions that should appear in the quesion bank for each session. </p>
+							<pre>min :: integer , optional</pre>
+						</li>
+						<li>
+							<p>Maximum, sets the maximum number of questions in the question bank. If no value is provided, all questionbank questions for the quiz will appear in the session. Note: if both min and max are set and max > min, a random inclusive sample will be taken for a quiz session. For example, suppose we have min = 5 and max = 10, a random number of questions between 5 and 10 will be assined to a session.</p>
+							<pre>max :: integer , optional</pre>
+						</li>
+						<li>
+							<p>Retakes, defines the number of times a user can take a quiz. If this value is set to 0, then there are no restrictions. Set to <i>n</i> where <i>n</i> is an integer greater than 0 to have <i>n</i> chance[s] to take a quiz.</p>
+							<pre>retakes :: integer , defaults to 0</pre>
+						</li>
+						<li>
+							<p>Published, if a quiz is publsihed, it will be accessable to other users for taking. Otherwise, only administrators will be allowed access.</p>
+							<pre>published :: boolean , defaults to false</pre>
+						</li>
+						<li>
+							<p>Skipable, if set to false, this parameter ensure that the user answers all questions in succession. Please note, if false, paging to one question at a time is enforced until the system marks the prior question complete.</p>
+							<pre>published :: boolean , defaults to true</pre>
+						</li>
+
+					</ul>
+
+					<h3>Assigning questions</h3>
+					<p>Questions can be assined to zero or many quiz objects in Simile. You can assign existing questions at anytime to a </p>
+
+
+					<h3>Starting your quiz</h3>
+					<pre>POST https://projectsimile.org/api/v1/quiz/:id/start</pre>
+					<p>If we make a valid request, we would see the following response</p>
+					<pre>{"session": 2} // 2 is the session id</pre>
+					<p>An invalid request would have to form</p>
+					<pre>{"error": "Error message"}</pre>
+					<p>Reasons for an invalid request:</p>
+					<ul>
+						<li>In session error:
+							<pre>{error: "You already have a quiz in session. Please resume your quiz with session id "}</pre> 
+							The user is attempting to take a quiz that is already in session. If the users completes the quiz or his/her time expires (in the case that it is a timed quiz), then the user will be allowed to start another session for the number or retakes defined for that quiz.
+						</li>
+						<li>Max retakes error:
+							<pre>{error:  "You've exceeded the maximum number of retakes for the quiz. Please contact your quiz adminstrator for more information"}</pre> The user has reach the allowed number of retakes. To prevent this, you should set your quiz parameter, "retakes" to 0 for unlimited retakes.
+						</li>
+						<li>Invalid parameters error:
+							<pre>{error:  "Insufficient parameters to initiate this quiz"}</pre> The POST requestion must include a valid quiz id as shown above.
+						</li>
+						<li>Unkown error:
+							<pre>{error:  "There was an error processing this quiz request. Please try again."}</pre> There was a system error that prevented the processing of your request. To report this issue, please post to our issues tracker.
+						</li>
+						<li>Publication error:
+							<pre>{error:  "You are attempting to take an unpublished quiz. Please contact your quiz administrator for further instructions"}</pre> The quiz has not been published. This can be resolved by setting the quiz parameter "published" to true.
+						</li>
+						<li>Inactive error:
+							<pre>{error:  "This quiz is currently inactive. Contact your quiz adminstrator for further instructions."}</pre> This error will occur when no questions have been assinged. To correct this error assing one or many questions and ensure your quiz has been published.
+						</li>
+						<li>Ivalid error:
+							<pre>{error:  "You are attempting to take an invalid quiz. Please contact your quiz adminstrator."}</pre> This error occurs when there is a mismatch with your quiz parameter. The most likely case is an error in the quiz paramters. 
+						</li>
+						<li>Undefined error:
+							<pre>{error:  "There is no quiz matching this ID"}</pre> There is no quiz for matching the posted id.
+						</li>Min/Max mismatch error:
+						<pre>{error: "The minimum number of questions assigned to this exceeds either the maximum parameter or number of questions in the question bank. Please contact your quiz adminstrator for more details"}, make sure your quizzes min attribute is less than or equal to the max and the number of questions in the question bank </pre>
+					</ul>
+
+					<h3>Getting the questions</h3>
+					<p>Once we have a valid session id, we can call retrieve our questions with the following GET request</p>
+					<pre>GET https://projectsimile.org/api/v1/quizSessions/:id?{params}</pre>
+					<p>If no parameters are defined, Simile sends back all questions in the bank. However, we can target specif questions assingd to our quiz session with the following parameters</p>
+					<ul>
+						<li>Retunrs a specific question <pre>api/v1/quizSessions/:id?question:3 // 3 is the third question in                                  // the question bank. Not the                                   // question model's id.</pre></li>
+					</ul>
+					<ul>
+						<li>Returns your questions in paged form. If an invalid start and end are not supplied, an error will be trown.
+						Retruns a specific question <pre>api/v1/quizSessions/:id?paged=true&start=0&end=4</pre>These values are interpreted as array indices. Therefore, following the above example, index 0 is the first question while 4 is the 5th question. This value is inclusive, so all questions between and equal to 0 - 5 will be returned.</li>
+
+					</ul>
