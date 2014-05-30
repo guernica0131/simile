@@ -113,11 +113,6 @@ module.exports = {
             start.setSeconds(start.getSeconds() + (quiz.timed * 60));
 
             var delta = start.getTime() - now.getTime();
-
-            // console.log("now", now);
-            // console.log("start", start);
-
-            // var delta = date2_ms - date1_ms;
             //take out milliseconds
             difference_ms = delta / 1000;
             var seconds = Math.floor(difference_ms % 60);
@@ -165,6 +160,10 @@ module.exports = {
 
     },
 
+    getQuestions: function() {
+
+    },
+
     createSession: function(params, callback) {
         // here we ensure that the user and the quiz has been defined
         if (!_.every([params.user, params.quiz]))
@@ -207,7 +206,7 @@ module.exports = {
             questionIDs = _.pluck(questions, 'id'), // questions should be ordered by priority
             count = _.size(questionIDs), // we automatically set our count to the minimum, that means at least this number questions will be generated
             questionIDs = _.sortBy(questionIDs, function(question) {
-                return question.priority
+                return question.priority // @TODO!!!!!! we need to filter those that are published and have states
             });
         // now we take a random value between min and max
         if ((min && min > _.size(questionIDs)) || (min && max && min != max && min > max))
@@ -256,8 +255,6 @@ module.exports = {
         Q.spread([currentQuizSession, AllQuizSessions, QandA, quiz, questionBank], function(currentQuizSession, AllQuizSessions, QandA, quiz, questionBank) {
             // we call valid to ensure we are creating a valid quiz
             QuizSession._isValid(currentQuizSession, AllQuizSessions, quiz, function(message) {
-
-
                 // of there is an error we return it
                 if (message.error) {
                     // we track all activity
@@ -271,7 +268,7 @@ module.exports = {
                         }, console.log);
                         // otherwise we need to create a new invalid session
                     } else {
-
+                        // now we create an invalid session to assign the restriction attempt
                         QuizSession.create({
                             user: params.user.id,
                             quiz: params.quiz.id,
@@ -295,35 +292,34 @@ module.exports = {
 
                 } else {
 
-
+                    var first = _.first(QandA);
                     // now let's build our session
                     QuizSession.create({
                         user: params.user.id,
                         quiz: params.quiz.id,
-                        questions: questionBank
+                        questions: questionBank,
+                        state: first.states[0].id, // assign the first question
+                        question: first.id // we assign the first questions first state
                     }, function(err, session) {
 
-
-
                         if (err) {
-                            sails.log("{QUIZ_SESSION.createSession} session creation error ", err);
+                            console.error("{QUIZ_SESSION.createSession} session creation error ", err);
                             return callback(Messages.errors.model.unknown);
                         }
                         // we pull the frist question
-                        var first = _.first(QandA);
-
                         QuizActivity.create({
                             action: !_.isUndefined(currentQuizSession) ? 'retake' : 'created',
-                            question: first.id,
-                            state: first.states[0].id,
-                            session: session.id //qs.id
+                            question: first.id, // create and first question has been defined
+                            state: first.states[0].id, //our activity relects the state that has been defined
+                            session: session.id
                         }, function(err, activity) {
                             if (err) {
                                 console.error("{QUIZ_SESSION.createSession} activity creation error ", err);
                                 return callback(Messages.errors.model.unknown);
                             }
                             return callback({
-                                session: session.id
+                                session: session.id,
+                                time: (quiz.timed * 60000)
                             });
 
                         });
@@ -335,6 +331,7 @@ module.exports = {
             });
 
         }).fail(function(error) {
+            console.error("{QUIZ_SESSION.createSession} promise falied ", error);
             return callback({
                 error: Messages.errors.model.unknown
             });
@@ -342,28 +339,6 @@ module.exports = {
         });
 
     },
-
-    _format: function(params, callback) {
-
-        var session = params.session,
-            quiz = params.quiz,
-            layout = quiz.layout,
-            key = _.keys(layout),
-            obj = {};
-
-
-        QuizSession._format({
-            session: session,
-            quiz: quiz
-        }, function(result) {
-            return callback({
-                quiz: result
-            });
-        });
-
-
-    },
-
 
     /*
      * This function is used to validate creating a new session

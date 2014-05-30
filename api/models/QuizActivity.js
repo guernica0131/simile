@@ -11,7 +11,7 @@ module.exports = {
 
         action: {
             type: 'string',
-            in : ['created', 'expired', 'completed', 'responded', 'skipped', 'retake', 'restrictedAttempt', 'invalid']
+            in : ['created', 'expired', 'completed', 'responded', 'skipped', 'retake', 'restrictedAttempt', 'invalid', 'delivered']
         },
 
         question: {

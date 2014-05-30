@@ -69,9 +69,9 @@ module.exports = {
             type: 'boolean',
             defaultsTo: false
         },
-        skippable: {
+        ordered: {
             type: 'boolean',
-            defaultsTo: true,
+            defaultsTo: false,
             required: true
         },
         next: function() {
